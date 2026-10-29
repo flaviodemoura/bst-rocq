@@ -57,7 +57,7 @@ tools/%.py: ;
 # identifiers in the PDF link to. REV pins the links to a commit so that line
 # numbers stay valid; override it with e.g. `make doc REV=main`.
 LOGICAL = BST
-REPO_URL = https://github.com/flaviodemoura/bst-search-insert-delete
+REPO_URL = https://github.com/flaviodemoura/bst-rocq
 REV ?= $(shell git rev-parse HEAD)
 
 # The .glob files (needed for hyperlinks) are produced by compiling the .v files

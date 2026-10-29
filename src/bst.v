@@ -8,25 +8,25 @@ Notation  "a >? b"  := (Nat.ltb b a) (at level 70) : nat_scope.
 
 (** ** Árvores binárias *)
 
-(** Utilizaremos números naturais para representar as chaves em cada nó de
-    nossas árvores binárias de busca porque os naturais possuem uma ordem
-    total [<=?] com diversos teoremas já provados. *)
+(** Utilizaremos números naturais para representar as chaves dos nós de
+    nossas árvores binárias de busca, pois os naturais possuem uma ordem
+    total, decidida pela função [<=?], sobre a qual a biblioteca padrão já
+    dispõe de diversos teoremas. *)
 
 Definition key := nat.
 
-(** Adicionalmente, os nós armazenarão pares chave/valor, onde o valor
-    associado a uma chave terá um tipo [V] qualquer. Definiremos
-    indutivamente a estrutura [tree] para representar árvores binárias cujos
-    nós contêm uma chave [k] e um valor [v]. As árvores possuem dois
-    construtores, [E] que representa a árvore vazia, e [T] que recebe os
-    seguintes argumentos:
+(** Além disso, os nós armazenarão pares chave/valor, em que o valor
+    associado a uma chave tem um tipo [V] qualquer. Definimos indutivamente o
+    tipo [tree] para representar árvores binárias cujos nós contêm uma chave
+    [k] e um valor [v]. O tipo [tree] possui dois construtores: [E], que
+    representa a árvore vazia, e [T], que recebe os seguintes argumentos:
 
     - [l]: a subárvore à esquerda do nó atual;
-    - [k]: a chave ligada ao nó atual;
-    - [v]: o valor associado à chave [k], e;
+    - [k]: a chave do nó atual;
+    - [v]: o valor associado à chave [k];
     - [r]: a subárvore à direita do nó atual.
 
-    Nesta construção, cada chave se liga a apenas um valor. *)
+    Nesta construção, cada chave está associada a um único valor. *)
 
 Inductive tree (V : Type) : Type :=
 | E
@@ -37,14 +37,14 @@ Arguments E {V}.
 Arguments T {V}.
 (* end hide *)
 
-(** Exemplo: a árvore binária contendo valores do tipo [string]
+(** Por exemplo, a árvore binária com valores do tipo [string]
 <<
       4 -> "four"
       /        \
      /          \
   2 -> "two"   5 -> "five"
 >>
-    é representada a seguir: *)
+    é representada da seguinte forma: *)
 
 Definition ex_tree : tree string :=
   (T (T E 2 "two" E) 4 "four" (T E 5 "five" E))%string.
@@ -60,7 +60,8 @@ Definition empty_tree {V : Type} : tree V := E.
     esquerda são menores do que [k], e todas as chaves da subárvore à direita
     são maiores do que [k].
 
-Nossa primeira tarefa será formalizar o invariante de uma árvore binária de busca. Faremos isto com a ajuda da função [ForallT]: *)
+    Nossa primeira tarefa será formalizar esse invariante. Para isso,
+    utilizaremos a função [ForallT]: *)
 
 Fixpoint ForallT {V : Type} (P: key -> V -> Prop) (t: tree V) : Prop :=
   match t with
@@ -68,23 +69,24 @@ Fixpoint ForallT {V : Type} (P: key -> V -> Prop) (t: tree V) : Prop :=
   | T l k v r => P k v /\ ForallT P l /\ ForallT P r
   end.
 
-(** Esta função expressa as condições para que uma árvore satisfaça uma dada
-    propriedade [P]: se a árvore for vazia então a propriedade é satisfeita
-    por vacuidade, e portanto retorna [True]. Quando a árvore não é vazia, e
-    portanto tem a forma [T l k v r], então precisamos que o nó que tem chave
-    [k] e valor [v] satisfaça a propriedade [P], assim como as subárvores à
-    esquerda e à direita. 
+(** A proposição [ForallT P t] afirma que todos os nós de [t] satisfazem a
+    propriedade [P]. Se a árvore é vazia, a propriedade é satisfeita por
+    vacuidade, e por isso [ForallT] retorna [True]. Se a árvore não é vazia,
+    isto é, se tem a forma [T l k v r], então o nó com chave [k] e valor [v]
+    deve satisfazer [P], assim como todos os nós das subárvores à esquerda e
+    à direita.
 
-O invariante, chamado [BST], das árvores binárias de busca é composto de dois construtores:
+    O invariante das árvores binárias de busca, chamado [BST], é definido
+    indutivamente por dois construtores:
 
-    - O primeiro construtor, denotado por [BST_E], consiste em um axioma que
-      estabelece que uma árvore vazia é uma árvore binária de busca.
+    - [BST_E] é um axioma que estabelece que a árvore vazia é uma árvore
+      binária de busca;
 
-    - O segundo construtor, denotado por [BST_T], consiste na regra que diz
-      que para que uma árvore não vazia [T l x v r] seja uma árvore binária
-      de busca é necessário que todas as chaves da subárvore à esquerda sejam
-      menores do que [x], todas as chaves da subárvore à direita sejam maiores
-      do que [x], e que as subárvores à esquerda e à direita sejam também árvores binárias de busca: *)
+    - [BST_T] é a regra segundo a qual uma árvore não vazia [T l x v r] é uma
+      árvore binária de busca quando todas as chaves da subárvore à esquerda
+      são menores do que [x], todas as chaves da subárvore à direita são
+      maiores do que [x], e ambas as subárvores são também árvores binárias
+      de busca: *)
 
 Inductive BST {V : Type} : tree V -> Prop :=
 | BST_E : BST E
@@ -100,10 +102,10 @@ Inductive BST {V : Type} : tree V -> Prop :=
 Ltac inv H := inversion H; clear H; subst.
 (* end hide *)
 
-(** A primeira operação importante relacionada às árvores binárias de busca
-    é certamente a busca, que pode ser implementada de forma muito
-    eficiente. Por exemplo, a função [bound k t] retorna [true] quando [k] é
-    uma chave de [t], e [false] caso contrário. *)
+(** A primeira operação fundamental das árvores binárias de busca é a
+    busca, que pode ser implementada de forma muito eficiente. A função
+    [bound k t] retorna [true] quando [k] é uma chave de [t], e [false] caso
+    contrário. *)
 
 Fixpoint bound {V : Type} (x : key) (t : tree V) :=
   match t with
@@ -113,9 +115,9 @@ Fixpoint bound {V : Type} (x : key) (t : tree V) :=
                      else true
   end.
 
-(** Analogamente, a função [lookup d k t] retorna o valor ligado à chave [k]
-    em [t], ou retorna o valor %\emph{default}% [d] quando [k] não é uma chave
-    de [t]. *)
+(** Analogamente, a função [lookup d k t] retorna o valor associado à chave
+    [k] em [t], ou o valor %\emph{default}% [d] quando [k] não é uma chave de
+    [t]. *)
 
 Fixpoint lookup {V : Type} (d : V) (x : key) (t : tree V) : V :=
   match t with
@@ -125,20 +127,20 @@ Fixpoint lookup {V : Type} (d : V) (x : key) (t : tree V) : V :=
                      else v
   end.
 
-(** Observe que se [t] não é uma árvore binária de busca então as funções
+(** Observe que, se [t] não for uma árvore binária de busca, as funções
     [bound] e [lookup] podem retornar respostas erradas: *)
 
 Module NotBst.
   Open Scope string_scope.
 
-  (** De fato, considere a seguinte árvore que não é uma árvore binária de
+  (** De fato, considere a seguinte árvore, que não é uma árvore binária de
       busca: *)
 
   Definition t : tree string :=
     T (T E 5 "five" E) 4 "four" (T E 2 "two" E).
 
-  (** Ela possui uma ocorrência da chave 2, mas em uma posição não esperada
-      pelas funções [bound] e [lookup]: *)
+  (** Ela contém a chave [2], mas em uma posição em que as funções [bound] e
+      [lookup] não a procuram: *)
 
   Example not_bst_bound_wrong :
     bound 2 t = false.
@@ -155,11 +157,11 @@ End NotBst.
 
 (** ** Inserção *)
 
-(** A segunda operação fundamental de árvores binárias de busca que
-    estudaremos neste trabalho é a inserção. A função [insert k v t] insere a
-    chave [k] e o valor [v] na árvore binária de busca [t], de forma a
-    preservar o invariante de uma árvore binária de busca. Se a chave [k] já
-    ocorre em [t], o valor associado a ela é substituído por [v]. *)
+(** A segunda operação fundamental das árvores binárias de busca que
+    estudaremos neste projeto é a inserção. A função [insert k v t] insere a
+    chave [k], com o valor [v], na árvore binária de busca [t], preservando o
+    invariante [BST]. Se a chave [k] já ocorre em [t], o valor associado a
+    ela é substituído por [v]. *)
 
 Fixpoint insert {V : Type} (x : key) (v : V) (t : tree V) : tree V :=
   match t with
@@ -221,8 +223,7 @@ Ltac bdestruct X :=
        [ | try first [apply Nat.nlt_ge in H | apply Nat.nle_gt in H]]].
 (* end hide *)
 
-(** Vejamos que o predicado [BST] classifica corretamente alguns
-    exemplos: *)
+(** O predicado [BST] classifica corretamente os exemplos anteriores: *)
 
 Example is_BST_ex :
   BST ex_tree.
@@ -247,7 +248,9 @@ Proof.
 (* Substitua esta linha pela sua prova. *)Admitted.
 
 (** *** Questão 2 *)
-(** Prove que a função [insert] preserva qualquer propriedade dos nós: *)
+(** Prove que, se todos os nós de [t] satisfazem uma propriedade [P] e o
+    par [(k, v)] também a satisfaz, então todos os nós de [insert k v t]
+    satisfazem [P]: *)
 
 Lemma ForallT_insert : forall (V : Type) (P : key -> V -> Prop) (t : tree V),
     ForallT P t -> forall (k : key) (v : V),
@@ -256,8 +259,8 @@ Proof.
 (* Substitua esta linha pela sua prova. *)Admitted.
 
 (** *** Questão 3 *)
-(** Prove que ao receber uma árvore binária de busca como argumento, a
-    função [insert] gera outra árvore binária de busca. *)
+(** Prove que, ao receber uma árvore binária de busca como argumento, a
+    função [insert] produz uma árvore binária de busca: *)
 
 Theorem insert_BST : forall (V : Type) (k : key) (v : V) (t : tree V),
     BST t -> BST (insert k v t).
@@ -266,9 +269,9 @@ Proof.
 
 (** ** A correção das funções de busca [lookup] e [bound] *)
 
-(** Qual o comportamento esperado para as funções [lookup] e [bound]? Ao
-    procurarmos uma chave na árvore binária de busca vazia com a função
-    [lookup], devemos obter o valor %\emph{default}% [d]: *)
+(** Qual é o comportamento esperado das funções [lookup] e [bound]? Ao
+    procurarmos uma chave na árvore vazia com a função [lookup], devemos
+    obter o valor %\emph{default}% [d]: *)
 
 Theorem lookup_empty : forall (V : Type) (d : V) (k : key),
     lookup d k empty_tree = d.
@@ -276,8 +279,8 @@ Proof.
   auto.
 Qed.
 
-(** Se inserirmos a chave [k] e o valor [v] na árvore binária de busca [t],
-    então a busca em [insert k v t] com a função [lookup] retorna [v]: *)
+(** Se inserirmos a chave [k], com o valor [v], em uma árvore [t], então a
+    busca por [k] em [insert k v t] com a função [lookup] retorna [v]: *)
 
 Theorem lookup_insert_eq : forall (V : Type) (t : tree V) (d : V) (k : key) (v : V),
     lookup d k (insert k v t) = v.
@@ -290,8 +293,8 @@ Proof.
     + bdestruct (k0 <? k0); try lia; auto.
 Qed.
 
-(** A tática [bdall] a seguir simplifica esta prova, evitando os passos
-    repetitivos: *)
+(** A tática [bdall], definida a seguir, simplifica essa prova, evitando
+    passos repetitivos: *)
 
 Ltac bdestruct_guard :=
   match goal with
@@ -311,9 +314,9 @@ Proof.
 Qed.
 
 (** *** Questão 4 *)
-(** Prove que a busca de uma chave [k'], via a função [lookup], na árvore
-    binária de busca [insert k v t], com [k] e [k'] distintos, retorna o
-    resultado de buscar [k'] em [t]: *)
+(** Prove que, se [k] e [k'] são chaves distintas, a busca por [k'] em
+    [insert k v t] com a função [lookup] retorna o mesmo resultado que a
+    busca por [k'] em [t]: *)
 
 Theorem lookup_insert_neq :
   forall (V : Type) (t : tree V) (d : V) (k k' : key) (v : V),
@@ -322,7 +325,10 @@ Proof.
 (* Substitua esta linha pela sua prova. *)Admitted.
 
 (** *** Questão 5 *)
-(** A relação esperada entre as funções [bound] e [lookup] é que, se [bound k t] retorna [false], então [lookup d k t] retorna o valor  %\emph{default}% [d]. Prove este fato dado pelo seguinte teorema: *)
+(** A relação esperada entre as funções [bound] e [lookup] é que, se
+    [bound k t] retorna [false], então [lookup d k t] retorna o valor
+    %\emph{default}% [d]. Prove esse fato, expresso pelo seguinte
+    teorema: *)
 
 Theorem bound_default :
   forall (V : Type) (k : key) (d : V) (t : tree V),
@@ -339,16 +345,16 @@ Proof.
     interessante ocorre quando [x = y], isto é, quando queremos remover a
     raiz. Se a subárvore à direita [r] for vazia, o resultado é simplesmente
     a subárvore à esquerda [l]. Caso contrário, a raiz é substituída pelo
-    %\emph{sucessor}% de [y], ou seja, pela menor chave de [r], que é
-    removida de [r]. Esta estratégia é conhecida como %\emph{remoção de
-    Hibbard}%.
+    %\emph{sucessor}% de [y], ou seja, pela menor chave de [r] (com o seu
+    valor), que é então removida de [r]. Essa estratégia é conhecida como
+    %\emph{remoção de Hibbard}%.
 
-    A função [remove_min l k v r] recebe as componentes de uma árvore não
-    vazia [T l k v r] e retorna uma tripla [(m, w, t')], onde [m] é a menor
+    A função [remove_min l k v r] recebe os componentes de uma árvore não
+    vazia [T l k v r] e retorna uma tripla [(m, w, t')], em que [m] é a menor
     chave da árvore, [w] é o valor associado a [m], e [t'] é a árvore obtida
-    removendo-se [m]. Receber as componentes de uma árvore não vazia, ao
-    invés de uma árvore qualquer, evita a necessidade de tratar o caso da
-    árvore vazia, que não possui menor chave. *)
+    removendo-se [m]. Receber os componentes de uma árvore não vazia, em vez
+    de uma árvore qualquer, evita ter de tratar o caso da árvore vazia, que
+    não possui menor chave. *)
 
 Fixpoint remove_min {V : Type} (l : tree V) (k : key) (v : V) (r : tree V)
   : key * V * tree V :=
@@ -357,6 +363,9 @@ Fixpoint remove_min {V : Type} (l : tree V) (k : key) (v : V) (r : tree V)
   | T ll lk lv lr =>
       let '(m, w, l') := remove_min ll lk lv lr in (m, w, T l' k v r)
   end.
+
+(** A função [delete x t] remove a chave [x] da árvore [t], seguindo a
+    estratégia descrita acima: *)
 
 Fixpoint delete {V : Type} (x : key) (t : tree V) : tree V :=
   match t with
@@ -371,7 +380,7 @@ Fixpoint delete {V : Type} (x : key) (t : tree V) : tree V :=
                 end
   end.
 
-(** Por exemplo, ao removermos a raiz da árvore [ex_tree], ela é
+(** Por exemplo, ao removermos a raiz [4] da árvore [ex_tree], ela é
     substituída pela chave [5], que é a menor chave da subárvore à
     direita: *)
 
@@ -379,9 +388,9 @@ Example delete_ex :
   delete 4 ex_tree = (T (T E 2 "two" E) 5 "five" E)%string.
 Proof. reflexivity. Qed.
 
-(** Nas provas a seguir, pode ser útil o seguinte lema, que diz que se todos
-    os nós de uma árvore satisfazem a propriedade [P], e [P] implica [Q],
-    então todos os nós da árvore satisfazem [Q]: *)
+(** Nas provas a seguir, pode ser útil o lema abaixo, segundo o qual, se
+    todos os nós de uma árvore satisfazem a propriedade [P] e [P] implica
+    [Q], então todos os nós da árvore satisfazem [Q]: *)
 
 Lemma ForallT_impl : forall (V : Type) (P Q : key -> V -> Prop) (t : tree V),
     (forall k v, P k v -> Q k v) -> ForallT P t -> ForallT Q t.
@@ -390,13 +399,14 @@ Proof.
   intros [Hk [Hl Hr]]. auto.
 Qed.
 
-(** Também será útil uma forma de destruir o resultado de [remove_min] sem
-    perder a informação sobre a sua origem. Para isto, utilize a tática
+(** Também será útil decompor o resultado de [remove_min] sem perder a
+    informação sobre a sua origem. Para isso, utilize a tática
     [destruct (remove_min l k v r) as [[m w] t'] eqn:Hrm]. *)
 
 (** *** Questão 6 *)
-(** Prove que a chave removida por [remove_min], assim como a árvore
-    resultante, preservam qualquer propriedade dos nós: *)
+(** Prove que, se todos os nós de [T l k v r] satisfazem uma propriedade
+    [P], então o par [(m, w)] removido por [remove_min] e todos os nós da
+    árvore resultante também satisfazem [P]: *)
 
 Lemma ForallT_remove_min :
   forall (V : Type) (P : key -> V -> Prop) (l r t' : tree V) (k m : key) (v w : V),
@@ -407,9 +417,9 @@ Proof.
 (* Substitua esta linha pela sua prova. *)Admitted.
 
 (** *** Questão 7 *)
-(** Prove que [remove_min] aplicada às componentes de uma árvore binária de
-    busca retorna uma árvore binária de busca cujas chaves são todas maiores
-    do que a chave removida: *)
+(** Prove que [remove_min], aplicada aos componentes de uma árvore binária
+    de busca, retorna uma árvore binária de busca cujas chaves são todas
+    maiores do que a chave removida: *)
 
 Lemma remove_min_BST :
   forall (V : Type) (l r t' : tree V) (k m : key) (v w : V),
@@ -420,7 +430,8 @@ Proof.
 (* Substitua esta linha pela sua prova. *)Admitted.
 
 (** *** Questão 8 *)
-(** Prove que a função [delete] preserva qualquer propriedade dos nós: *)
+(** Prove que, se todos os nós de [t] satisfazem uma propriedade [P], então
+    todos os nós de [delete k t] também a satisfazem: *)
 
 Lemma ForallT_delete : forall (V : Type) (P : key -> V -> Prop) (k : key) (t : tree V),
     ForallT P t -> ForallT P (delete k t).
@@ -428,8 +439,8 @@ Proof.
 (* Substitua esta linha pela sua prova. *)Admitted.
 
 (** *** Questão 9 *)
-(** Prove que ao receber uma árvore binária de busca como argumento, a
-    função [delete] gera outra árvore binária de busca. *)
+(** Prove que, ao receber uma árvore binária de busca como argumento, a
+    função [delete] produz uma árvore binária de busca: *)
 
 Theorem delete_BST : forall (V : Type) (k : key) (t : tree V),
     BST t -> BST (delete k t).

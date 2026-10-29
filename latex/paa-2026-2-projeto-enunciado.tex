@@ -108,7 +108,7 @@
 
 \section{Introdução}
 
-Uma \emph{árvore binária de busca} (BST, Binary Search Tree) é uma árvore binária em que cada nó
+Uma \emph{árvore binária de busca} (BST, do inglês \emph{binary search tree}) é uma árvore binária em que cada nó
 armazena uma chave (possivelmente acompanhada de um valor) de forma que,
 para todo nó com chave $k$, as chaves da subárvore à esquerda são menores
 do que $k$ e as chaves da subárvore à direita são maiores do que $k$. Esse
@@ -179,16 +179,16 @@ da série \emph{Software Foundations}) e estendida com a operação de remoção
   \item as funções \texttt{insert} e \texttt{delete} preservam o
     invariante \texttt{BST};
   \item as funções de busca \texttt{bound} e \texttt{lookup} se comportam
-    como esperado após inserções e remoções.
+    como esperado, em particular após inserções.
   \end{enumerate}
 \end{objetivo}
 
 \section{A formalização}
 
-Todo o código-fonte deste documento está disponível no
-\href{https://github.com/flaviodemoura/bst-search-insert-delete}{repositório
-do projeto}. Em cada caixa de código, o título \rocq{} é um \emph{link}
-para o trecho correspondente no repositório.
+Todo o código-fonte apresentado neste documento está disponível no
+\href{https://github.com/flaviodemoura/bst-rocq}{repositório do projeto},
+no arquivo \texttt{src/bst.v}. Em cada caixa de código, o rótulo \rocq{}
+é um \emph{link} para o trecho correspondente no repositório.
 
 A seguir, apresentamos as definições das árvores binárias, do invariante
 \texttt{BST} e das operações de busca, inserção e remoção, bem como as
@@ -201,7 +201,8 @@ questões do projeto.
 \begin{itemize}[leftmargin=*]
 \item O projeto pode ser feito \textbf{individualmente ou em grupos de até
     4 alunos}.
-\item A tarefa consiste em resolver as 9 questões propostas. 
+\item A tarefa consiste em resolver as nove questões propostas, substituindo
+  cada \texttt{Admitted} do arquivo \texttt{src/bst.v} por uma prova completa.
 \item É permitido (e recomendado) definir lemas auxiliares e utilizar os
   resultados da biblioteca padrão do \rocq. Algumas dicas:
   \begin{itemize}[nosep]
@@ -256,9 +257,9 @@ questões do projeto.
 
 O tema deste projeto (a formalização de árvores binárias de busca) é uma
 \textbf{sugestão}. Os grupos podem desenvolver outros temas, \textbf{desde
-  que o tema seja acordado previamente com o professor}, antes do início do
-seu desenvolvimento. A utilização de outros assistentes de prova (Lean,
-Agda, PVS, Isabelle/HOL, etc) também é possível. As demais instruções
+  que o tema seja acordado com o professor} antes do início do seu
+desenvolvimento. Também é possível utilizar outros assistentes de provas
+(Lean, Agda, PVS, Isabelle/HOL etc.). As demais instruções
 deste documento, em particular as relativas ao uso de IA e à defesa oral,
 também se aplicam a esses temas.
 

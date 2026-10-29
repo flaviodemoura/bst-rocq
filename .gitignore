@@ -1,0 +1,15 @@
+CoqMakefile*
+.CoqMakefile.d
+.lia.cache
+*.vo
+*.vok
+*.vos
+*.glob
+.*.aux
+latex/*.v.tex
+latex/coqsrc*.tex
+latex/*.aux
+latex/*.log
+latex/*.out
+latex/*.toc
+latex/*.pdf
