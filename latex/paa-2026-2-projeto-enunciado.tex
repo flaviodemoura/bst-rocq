@@ -1,0 +1,291 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}
+\usepackage[varqu,varl]{zi4}
+\usepackage{microtype}
+\usepackage[a4paper,margin=2.5cm,headheight=14pt]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[color]{coqdoc}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{fontawesome5}
+
+% ------------------------------------------------------------------
+% Cores
+% ------------------------------------------------------------------
+\definecolor{unbblue}{RGB}{0,63,135}
+\definecolor{unbgreen}{RGB}{0,122,61}
+\definecolor{codeback}{RGB}{248,249,252}
+\definecolor{codeframe}{RGB}{190,200,220}
+
+\hypersetup{colorlinks=true,linkcolor=unbblue,urlcolor=unbblue,citecolor=unbblue,
+  pdftitle={LC1 2026/2 -- Projeto: Árvores Binárias de Busca},
+  pdfauthor={Flávio L. C. de Moura}}
+
+% Liga as definições nos blocos de código ao repositório. Os arquivos
+% coqsrcbase.tex e coqsrclinks.tex são gerados por `make doc`.
+\input{coqsrcbase}
+\makeatletter
+\newcommand{\coqsrcline}[3]{\@namedef{coqsrc@#1}{#2\#L#3}}
+\newcommand{\coqsrclink}[2]{\@ifundefined{coqsrc@#1}{#2}{\href{\coqsrcbase\@nameuse{coqsrc@#1}}{#2}}}
+\makeatother
+\input{coqsrclinks}
+
+% ------------------------------------------------------------------
+% Títulos e cabeçalhos
+% ------------------------------------------------------------------
+\titleformat{\section}{\Large\bfseries\color{unbblue}}{\thesection}{0.6em}{}
+  [{\color{unbblue!40}\titlerule[0.8pt]}]
+\titleformat{\subsection}{\large\bfseries\color{unbblue!85!black}}{\thesubsection}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{unbblue}Lógica Computacional 1 -- 2026/2}
+\fancyhead[R]{\small\color{unbblue}Projeto: árvores binárias de busca}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{unbblue!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+% ------------------------------------------------------------------
+% Código Rocq gerado pelo rocq doc em caixas tcolorbox
+% ------------------------------------------------------------------
+% tools/tidy_coqdoc.py passa a chave da primeira definição do bloco como
+% argumento opcional de coqdoccode; o título da caixa aponta para ela no
+% repositório.
+\newtcolorbox{rocqbox}[1]{enhanced,
+  colback=codeback,colframe=codeframe,boxrule=0.5pt,arc=2mm,
+  leftrule=3pt,left=8pt,right=8pt,top=6pt,bottom=6pt,
+  borderline west={3pt}{0pt}{unbblue},
+  before skip=0.8em,after skip=0.8em,
+  attach boxed title to top right={yshift=-2mm,xshift=-3mm},
+  boxed title style={colback=unbblue,colframe=unbblue,arc=1mm,boxrule=0pt,
+    left=3pt,right=3pt,top=1pt,bottom=1pt},
+  coltitle=white,fonttitle=\scriptsize\sffamily\bfseries,
+  fontupper=\small,
+  title={\coqsrclink{#1}{\textcolor{white}{Rocq}}}}
+
+\RenewDocumentEnvironment{coqdoccode}{O{}}
+  {\begin{rocqbox}{#1}}
+  {\end{rocqbox}}
+
+% Links para a biblioteca padrão do Rocq
+\renewcommand{\coqexternalref}[3]{\href{#2.html}{#3}}
+
+% Caixas de destaque para o texto do enunciado
+\newtcolorbox{objetivo}{enhanced,colback=unbgreen!6,colframe=unbgreen,
+  boxrule=0.6pt,arc=2mm,left=10pt,right=10pt,
+  fonttitle=\bfseries,title={\faBullseye\quad Objetivo do projeto}}
+\newtcolorbox{atencao}{enhanced,colback=orange!6,colframe=orange!80!black,
+  boxrule=0.6pt,arc=2mm,left=10pt,right=10pt,
+  fonttitle=\bfseries,title={\faExclamationTriangle\quad Atenção}}
+
+\newcommand{\rocq}{\textsf{Rocq}}
+\newcommand{\prazo}{defesa oral, com data a agendar}
+
+\begin{document}
+
+% ------------------------------------------------------------------
+% Cabeçalho
+% ------------------------------------------------------------------
+\thispagestyle{empty}
+\begin{tcolorbox}[enhanced,colback=unbblue,colframe=unbblue,arc=0mm,
+  left=12pt,right=12pt,top=10pt,bottom=10pt,coltext=white]
+  {\small Universidade de Brasília \hfill Departamento de Ciência da Computação}\\[0.6em]
+  {\LARGE\bfseries Lógica Computacional 1 -- 2026/2}\\[0.4em]
+  {\Large Projeto: Formalização de árvores binárias de busca (BST)}\\[0.6em]
+  {\small Prof. Flávio L. C. de Moura \hfill Entrega: \prazo}
+\end{tcolorbox}
+
+
+\section{Introdução}
+
+Uma \emph{árvore binária de busca} (BST, Binary Search Tree) é uma árvore binária em que cada nó
+armazena uma chave (possivelmente acompanhada de um valor) de forma que,
+para todo nó com chave $k$, as chaves da subárvore à esquerda são menores
+do que $k$ e as chaves da subárvore à direita são maiores do que $k$. Esse
+invariante permite implementar as operações de \emph{busca},
+\emph{inserção} e \emph{remoção} percorrendo um único caminho da raiz até
+uma folha, isto é, em tempo proporcional à altura da árvore: $O(\log n)$
+quando a árvore está balanceada, mas $\Theta(n)$ no pior caso. As árvores
+binárias de busca são a base de estruturas de dados como as árvores AVL,
+as árvores rubro-negras e as \emph{treaps}, e são utilizadas na
+implementação de dicionários e conjuntos em muitas linguagens de
+programação. Uma apresentação detalhada pode ser encontrada no Capítulo~12
+do livro de Cormen, Leiserson, Rivest e Stein~\cite{cormen2022}.
+
+As árvores binárias de busca foram descobertas de forma independente por
+diversos pesquisadores no final da década de 1950, em um momento em que se
+buscavam formas eficientes de armazenar tabelas de símbolos e dicionários
+na memória dos primeiros computadores. Os primeiros trabalhos publicados
+são os de P.~F.~Windley~\cite{windley1960} e de A.~D.~Booth e
+A.~J.~T.~Colin~\cite{booth1960}, ambos de 1960. Em 1962, T.~N.~Hibbard
+publicou um estudo das propriedades combinatórias dessas
+árvores~\cite{hibbard1962}, no qual descreve o algoritmo de remoção que
+estudaremos neste projeto: para remover a chave de um nó com duas
+subárvores não vazias, ela é substituída pela menor chave da subárvore à
+direita (o seu \emph{sucessor}), que é então removida dessa subárvore.
+
+\begin{tcolorbox}[enhanced,breakable,colback=unbblue!4,colframe=unbblue!60,
+  boxrule=0.6pt,arc=2mm,left=10pt,right=10pt,fonttitle=\bfseries,
+  title={\faLightbulb[regular]\quad Curiosidades}]
+  \begin{itemize}[leftmargin=1.2em,itemsep=0.3em]
+  \item Se $n$ chaves distintas são inseridas em uma ordem aleatória, a
+    altura esperada da árvore resultante é $O(\log n)$. Por outro lado,
+    se as chaves são inseridas em ordem crescente, a árvore degenera em
+    uma lista e as operações passam a custar $\Theta(n)$. É por isso que,
+    na prática, utilizam-se variantes \emph{balanceadas}, que realizam
+    rotações para manter a altura logarítmica.
+  \item A remoção é muito mais difícil de analisar do que a inserção.
+    Hibbard mostrou que uma remoção preserva a ``aleatoriedade'' de uma
+    árvore aleatória, mas sequências alternadas de inserções e remoções
+    modificam a distribuição das árvores de forma sutil. A análise de um
+    caso aparentemente simples, com árvores de apenas três nós, rendeu a
+    Jonassen e Knuth um artigo inteiro, com o sugestivo título \emph{A
+      trivial algorithm whose analysis isn't}~\cite{jonassen1978}.
+  \item Como a remoção de Hibbard sempre utiliza o sucessor, e nunca o
+    predecessor, ela é assimétrica. Experimentos de
+    Eppinger~\cite{eppinger1983} indicaram que longas sequências de
+    inserções e remoções aleatórias tendem a deixar a árvore
+    \emph{menos} balanceada do que uma árvore construída apenas por
+    inserções.
+  \end{itemize}
+\end{tcolorbox}
+
+\subsection*{O projeto}
+
+Neste projeto, as árvores binárias de busca serão estudadas do ponto de
+vista da \emph{verificação formal}: em vez de testar as operações em
+alguns exemplos, queremos construir \emph{provas matemáticas}, verificadas
+mecanicamente pelo assistente de provas \rocq{}~(versão 9.1.1), de que
+elas estão corretas para \emph{todas} as árvores possíveis. A formalização
+apresentada a seguir foi adaptada da referência~\cite{appel} (capítulo
+\emph{SearchTree} do livro \emph{Verified Functional Algorithms}, volume~3
+da série \emph{Software Foundations}) e estendida com a operação de remoção.
+
+\begin{objetivo}
+  O objetivo deste projeto é \textbf{provar formalmente, no assistente de
+    provas \rocq, a correção das operações de busca, inserção e remoção em
+    árvores binárias de busca}, isto é, que:
+  \begin{enumerate}[label=(\roman*),nosep]
+  \item as funções \texttt{insert} e \texttt{delete} preservam o
+    invariante \texttt{BST};
+  \item as funções de busca \texttt{bound} e \texttt{lookup} se comportam
+    como esperado após inserções e remoções.
+  \end{enumerate}
+\end{objetivo}
+
+\section{A formalização}
+
+Todo o código-fonte deste documento está disponível no
+\href{https://github.com/flaviodemoura/bst-search-insert-delete}{repositório
+do projeto}. Em cada caixa de código, o título \rocq{} é um \emph{link}
+para o trecho correspondente no repositório.
+
+A seguir, apresentamos as definições das árvores binárias, do invariante
+\texttt{BST} e das operações de busca, inserção e remoção, bem como as
+questões do projeto.
+
+\input{bst.v.tex}
+
+\section{Instruções}
+
+\begin{itemize}[leftmargin=*]
+\item O projeto pode ser feito \textbf{individualmente ou em grupos de até
+    4 alunos}.
+\item A tarefa consiste em resolver as 9 questões propostas. 
+\item É permitido (e recomendado) definir lemas auxiliares e utilizar os
+  resultados da biblioteca padrão do \rocq. Algumas dicas:
+  \begin{itemize}[nosep]
+  \item a tática \texttt{bdall} resolve automaticamente muitos dos casos
+    gerados pelas comparações \texttt{<?} entre chaves, e a tática
+    \texttt{bdestruct} permite fazer essa análise de casos manualmente;
+  \item nas questões sobre a remoção, a indução deve ser feita com cuidado:
+    observe sobre qual argumento a função \texttt{remove\_min} é recursiva,
+    e quais argumentos devem ser generalizados antes da indução;
+  \item o lema \texttt{ForallT\_impl} é útil para obter, por exemplo,
+    \texttt{ForallT (fun y \_ => y < m) l} a partir de
+    \texttt{ForallT (fun y \_ => y < x) l} e $x < m$.
+  \end{itemize}
+\end{itemize}
+
+\begin{atencao}
+  As provas devem compilar sem erros no \rocq{} e não podem conter
+  os comandos \texttt{Admitted}, \texttt{admit} ou \texttt{Axiom}.
+\end{atencao}
+
+\section{Uso de IA e entrega}
+
+\begin{itemize}[leftmargin=*]
+\item O projeto pode ser desenvolvido com o apoio de ferramentas de
+  inteligência artificial. No entanto, \textbf{a compreensão da resolução faz
+    parte do projeto}: não basta apresentar uma prova que compila, é
+  necessário entendê-la. Cada integrante do grupo deve ser capaz de
+  explicar a estratégia geral da prova, o papel de cada lema auxiliar e o
+  efeito das táticas utilizadas, bem como de responder a perguntas sobre
+  possíveis modificações da prova ou do enunciado.
+\item A entrega será feita por meio de uma \textbf{apresentação e defesa
+    oral} de cada grupo, em data a ser agendada ao longo das próximas aulas.
+\item Os grupos devem estar preparados para \textbf{explicar as provas em
+    linguagem natural}, isto é, como uma prova matemática usual, sem
+  recorrer às táticas do \rocq: por exemplo, sobre o que é feita a indução,
+  quais são os casos e por que os lemas auxiliares são necessários.
+  \textbf{Essa explicação fará parte da avaliação.}
+\item Durante a defesa, perguntas poderão ser dirigidas a qualquer
+  integrante do grupo, e a avaliação levará em conta tanto a prova
+  apresentada quanto a compreensão demonstrada por cada um.
+\end{itemize}
+
+\begin{tcolorbox}[enhanced,colback=unbblue!4,colframe=unbblue!60,
+  boxrule=0.6pt,arc=2mm,left=10pt,right=10pt,fonttitle=\bfseries,
+  title={\faRobot\quad Sobre o uso de IA}]
+  Use a IA como uma ferramenta de apoio ao aprendizado: peça explicações,
+  explore alternativas e questione as respostas obtidas. Uma prova que o grupo
+  não consegue explicar não será considerada uma solução do projeto.
+\end{tcolorbox}
+
+\section{Outros temas}
+
+O tema deste projeto (a formalização de árvores binárias de busca) é uma
+\textbf{sugestão}. Os grupos podem desenvolver outros temas, \textbf{desde
+  que o tema seja acordado previamente com o professor}, antes do início do
+seu desenvolvimento. A utilização de outros assistentes de prova (Lean,
+Agda, PVS, Isabelle/HOL, etc) também é possível. As demais instruções
+deste documento, em particular as relativas ao uso de IA e à defesa oral,
+também se aplicam a esses temas.
+
+{\small
+\begin{thebibliography}{9}
+\setlength{\itemsep}{1pt}
+\bibitem{cormen2022} T.~H. Cormen, C.~E. Leiserson, R.~L. Rivest e C.~Stein.
+  \emph{Introduction to Algorithms}. 4.\textsuperscript{a} edição, MIT Press,
+  2022.
+\bibitem{windley1960} P.~F. Windley. Trees, forests and rearranging.
+  \emph{The Computer Journal}, 3(2):84--88, 1960.
+\bibitem{booth1960} A.~D. Booth e A.~J.~T. Colin. On the efficiency of a
+  new method of dictionary construction. \emph{Information and Control},
+  3(4):327--334, 1960.
+\bibitem{hibbard1962} T.~N. Hibbard. Some combinatorial properties of
+  certain trees with applications to searching and sorting. \emph{Journal
+    of the ACM}, 9(1):13--28, 1962.
+\bibitem{jonassen1978} A.~T. Jonassen e D.~E. Knuth. A trivial algorithm
+  whose analysis isn't. \emph{Journal of Computer and System Sciences},
+  16(3):301--322, 1978.
+\bibitem{eppinger1983} J.~L. Eppinger. An empirical study of insertion and
+  deletion in binary search trees. \emph{Communications of the ACM},
+  26(9):663--669, 1983.
+\bibitem{appel} A.~W. Appel. \emph{Verified Functional Algorithms}.
+  Volume~3 de \emph{Software Foundations}, B.~C. Pierce (ed.).
+  \url{https://softwarefoundations.cis.upenn.edu/}.
+\end{thebibliography}
+}
+
+\end{document}
